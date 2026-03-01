@@ -78,6 +78,8 @@ bool SerialPort::Stop()
     }
     thRx.join();
 
+    CloseHandle(serialHandle);
+
     isOpened = false;
     return true;
 }
@@ -87,11 +89,7 @@ std::vector<std::string> SerialPort::GetSerialPorts()
     std::vector<std::string> ports;
 
     HKEY hKey;
-    if (RegOpenKeyExA(HKEY_LOCAL_MACHINE,
-                      "HARDWARE\\DEVICEMAP\\SERIALCOMM",
-                      0,
-                      KEY_READ,
-                      &hKey) == ERROR_SUCCESS)
+    if (RegOpenKeyExA(HKEY_LOCAL_MACHINE, "HARDWARE\\DEVICEMAP\\SERIALCOMM", 0, KEY_READ, &hKey) == ERROR_SUCCESS)
     {
         char valueName[256];
         char data[256];
@@ -103,15 +101,10 @@ std::vector<std::string> SerialPort::GetSerialPorts()
             valueNameSize = sizeof(valueName);
             dataSize = sizeof(data);
 
-            if (RegEnumValueA(hKey,
-                              index++,
-                              valueName,
-                              &valueNameSize,
-                              NULL,
-                              &type,
-                              (LPBYTE)data,
-                              &dataSize) != ERROR_SUCCESS)
+            if (RegEnumValueA(hKey, index++, valueName, &valueNameSize, NULL, &type, (LPBYTE)data, &dataSize) != ERROR_SUCCESS)
+            {
                 break;
+            }
 
             ports.push_back(std::string(data));
         }
@@ -122,20 +115,36 @@ std::vector<std::string> SerialPort::GetSerialPorts()
     return ports;
 }
 
-void SerialPort::SetOnRx(void (*callback)(char*, size_t len))
+void SerialPort::SetOnRx(std::function<void(char*, int)> cb)
 {
-    onRx = callback;
+    OnRx = cb;
 }
 
 void SerialPort::ThRx()
 {
     thRxRunning = true;
-    uint32_t sleepMax = 1000;
+    uint32_t sleepMax = 1;
+
+    char buffer[256];
+    DWORD bytesRead;
 
     while(thRxEnabled)
     {
+        if (!ReadFile(serialHandle, buffer, sizeof(buffer), &bytesRead, NULL))
+        {
+            continue;
+        }
 
+        if (bytesRead > 0)
+        {
+            std::string data(buffer, bytesRead);
 
+            if (SerialPort::OnRx != NULL)
+            {
+                SerialPort::OnRx(buffer, (int)bytesRead);
+            }
+            //std::cout << "Recebido: " << data << std::endl;
+        }
 
         uint32_t cont = 0;
         while(cont++ < sleepMax && thRxEnabled)

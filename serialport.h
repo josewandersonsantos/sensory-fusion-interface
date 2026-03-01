@@ -5,15 +5,13 @@
 #include <thread>
 #include <windows.h>
 
-typedef void (*Rxcallback)(char*, size_t len);
-
 class SerialPort
 {
 public:
     SerialPort();
     bool Start(std::string port, int baud);
     bool Stop();
-    void SetOnRx(Rxcallback);
+    void SetOnRx(std::function<void(char*, int)> cb);
 
     std::vector<std::string> GetSerialPorts();
     bool IsOpen(){return isOpened;}
@@ -21,9 +19,9 @@ public:
 private:
     std::string port;
     int baud;
-    bool isOpened;
+    bool isOpened = false;
 
-    Rxcallback onRx;
+    std::function<void(char*, int)> OnRx;
 
     HANDLE serialHandle;
     std::thread thRx;
