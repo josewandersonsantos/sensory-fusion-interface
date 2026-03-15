@@ -11,6 +11,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS 3DCore 3DRender 3DInput 3DLogic 3DExtras 3DAnimation)
 
 set(PROJECT_SOURCES
         main.cpp
@@ -25,6 +26,9 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ${PROJECT_SOURCES}
         serialport.h serialport.cpp
         tcpclient.h tcpclient.cpp
+        viewer3d.h viewer3d.cpp
+        viewer3d.pro
+        bridge.h bridge.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET SensoryFusionInterface APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
@@ -44,7 +48,7 @@ else()
     endif()
 endif()
 
-target_link_libraries(SensoryFusionInterface PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(SensoryFusionInterface PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::3DCore Qt${QT_VERSION_MAJOR}::3DRender Qt${QT_VERSION_MAJOR}::3DLogic Qt${QT_VERSION_MAJOR}::3DExtras Qt${QT_VERSION_MAJOR}::3DAnimation)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
