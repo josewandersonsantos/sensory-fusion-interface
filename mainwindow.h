@@ -1,10 +1,12 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "serialport.h"
+#include "bridge.h"
 #include "tcpclient.h"
 #include <QMainWindow>
 #include "viewer3d.h"
+#include <QTimer>
+#include <mutex>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -29,8 +31,13 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    SerialPort serialPort;
+    //SerialPort serialPort;
+    Bridge bridge;
     TcpClient tcpClient;
     Viewer3D viewer3D;
+
+    std::mutex logMutex;
+    QStringList logBuffer;
+    QTimer *logTimer;
 };
 #endif // MAINWINDOW_H
