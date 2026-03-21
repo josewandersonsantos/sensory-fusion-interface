@@ -42,7 +42,7 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
 
-    logTimer->start(1000);
+    logTimer->start(500);
 }
 
 MainWindow::~MainWindow()
