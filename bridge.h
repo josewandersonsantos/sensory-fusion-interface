@@ -24,6 +24,7 @@ public:
     void OnNewdata(uint8_t* data, size_t len);
     void SetOnRxDataImu(std::function<void(float, float, float, float, float, float, float)> cb);
     void SetOnRxDataGps(std::function<void(char*, int)> cb);
+    void SetOnRxCoords(std::function<void(float, float, float)> cb);
     void SendCfgData();
 
     bool Connect(std::string port, int baud);
@@ -39,6 +40,7 @@ public:
     SerialPort serialPort;
     std::function<void(float, float, float, float, float, float, float)> OnImuData;
     std::function<void(char*, int)> OnGpsData;
+    std::function<void(float, float, float)> OnCoords;
     
     bridge_rx_states_t rx_state = BRIDGE_RX_WAITING_SOF;
     std::vector<uint8_t> buff_rx;

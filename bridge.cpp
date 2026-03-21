@@ -13,6 +13,11 @@ void Bridge::SetOnRxDataGps(std::function<void(char*, int)> cb)
     OnGpsData = cb;
 }
 
+void Bridge::SetOnRxCoords(std::function<void(float, float, float)> cb)
+{
+    OnCoords = cb;
+}
+
 bool Bridge::Connect(std::string port, int baud)
 {
     if(serialPort.Start(port, baud))
@@ -57,6 +62,13 @@ void Bridge::ManageFrame(uint8_t* data)
             Bridge::OnGpsData((char *)&data[sizeof(frame_header_t)], (int)((frame_t*)&data[0])->header.len);
         break;
         case FR_TYPE_COORDS:
+        {
+            float lat = *(float*)&data[sizeof(frame_header_t)];
+            float lng = *(float*)&data[sizeof(frame_header_t) + 4];
+            float alt = *(float*)&data[sizeof(frame_header_t) + 8];
+
+            Bridge::OnCoords(lat, lng, alt);
+        }
         break;
         case FR_TYPE_ACC_DATA:
         break;
